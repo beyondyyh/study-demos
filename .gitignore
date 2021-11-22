@@ -11,4 +11,4 @@ vendor
 output
 
 # Logs
-logs/*
+logs
