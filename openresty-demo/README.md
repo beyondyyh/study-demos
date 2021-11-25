@@ -1,6 +1,7 @@
 # openresty-demo
 
 ## 安装、服务启停
+> 做 OpenResty 开发，[`lua-nginx-module官方文档`](https://github.com/openresty/lua-nginx-module) 是你的首选，Lua 语言的库都是同步阻塞的，用的时候要三思
 
 **源码安装：**
 ```sh
@@ -17,29 +18,26 @@ cd ~/Workspace/study/openresty/ngx_openresty-1.9.7.1/
             --with-ld-opt="-L/usr/local/lib"
 ```
 
-> ngx_openresty安装路径：/usr/local/openresty
-> nginx可执行文件路径：/usr/local/openresty/nginx/sbin，已经加入PATH
-
 **start：**
 ```sh
-nginx -p `pwd`/../openresty-demo
-```
-
-**查看进程：**
-```sh
-$ ps -ef|grep openresty-demo
-  501 23459     1   0  6:01PM ??         0:00.00 nginx: master process nginx -p /Users/yehong/Workspace/study/go/src/beyondyyh/study-demos/openresty-demo/../openresty-demo
-  501 24323 31012   0  6:02PM ttys003    0:00.00 grep openresty-demo
+openresty -p `pwd`/../openresty-demo
 ```
 
 **stop：**
 ```sh
-nginx -p `pwd`/../openresty-demo -s stop
+openresty -p `pwd`/../openresty-demo -s stop
+```
+
+**查看进程：**
+```sh
+$ ps -ef|grep openresty
+  501 89936     1   0  3:01PM ??         0:00.00 nginx: master process openresty -p /Users/yehong/Workspace/study/go/src/beyondyyh/study-demos/openresty-demo/../openresty-demo
+  501 16690 64592   0  3:38PM ttys004    0:00.01 grep openresty
 ```
 
 ## 配置文件
 
-- **location匹配规则** [location.conf](conf/servers/location.conf) 
+### location匹配规则 [location.conf](conf/servers/location.conf)
 
 | 模式 | 含义 |
 | --- | --- |
@@ -58,19 +56,20 @@ nginx -p `pwd`/../openresty-demo -s stop
 >- 最后是交给 `/` 通用匹配
 >- 当有匹配成功时候，停止匹配，按当前匹配规则处理请求。
 
-- **获取uri参数** [print_url.conf](conf/servers/print_args.conf)
+### 获取uri参数 [print_url.conf](conf/servers/print_args.conf)
 
-- **获取请求body、输出响应体** [print_body.conf](conf/servers/print_body.conf)
-  - nginx.say和ngx.print均为异步输出；
-  - nginx.say会对响应体多输出一个`\n`，如果是浏览器输出而且没有区别，但是终端调试工具下使用ngx.say会比较方便。
+### 获取请求body、输出响应体 [print_body.conf](conf/servers/print_body.conf)
 
-- **日志标准输出**
+- nginx.say和ngx.print均为异步输出；
+- nginx.say会对响应体多输出一个`\n`，如果是浏览器输出而且没有区别，但是终端调试工具下使用ngx.say会比较方便。
+
+### 日志标准输出
 > 自定义日志格式，参考nginx的 [`log_format`](http://nginx.org/en/docs/http/ngx_http_log_module.html#log_format) 环节
 
 如果你的日志需要归集，并且对时效性要求比较高推荐使用 [lua-resty-logger-socket](https://github.com/cloudflare/lua-resty-logger-socket)，
 `lua-resty-logger-socket` 的目标是替代 Nginx 标准的 [ngx_http_log_module](http://nginx.org/en/docs/http/ngx_http_log_module.html) 以非阻塞 IO 方式推送 `access log` 到远程服务器上。对远程服务器的要求是支持 `syslog-ng` 的日志服务。
 
-- **简单API Server框架**
+### 简单API Server框架
 
 整体目录结构：
 ```txt
@@ -80,6 +79,7 @@ nginx -p `pwd`/../openresty-demo -s stop
 ├── conf
 │   ├── nginx.conf
 │   └── servers
+│       ├── my_cache.conf
 │       └── simple_api.conf
 ├── fastcgi_temp
 ├── logs
@@ -87,21 +87,95 @@ nginx -p `pwd`/../openresty-demo -s stop
 │   ├── error.log
 │   └── nginx.pid
 ├── lua
-│   ├── access_check.lua
-│   ├── addition.lua
-│   |── subtraction.lua
-│   ├── multiplication.lua
-│   ├── division.lua
-└── └── comm
-       └── param.lua
+│   ├── comm
+│   │   └── param.lua
+│   └── simple_api
+│       ├── access_check.lua
+│       ├── addition.lua
+│       ├── division.lua
+│       ├── multiplication.lua
+│       └── subtraction.lua
+├── proxy_temp
+├── scgi_temp
+└── uwsgi_temp
 ```
 
-- **Nginx内置绑定变量**
+### Nginx内置绑定变量
 > 在OpenResty中如何引用这些变量呢？参考 [ngx.var.VARIAB](https://github.com/openresty/lua-nginx-module#ngxvarvariable) 小节。
 
-- **防止SQL注入**
+### 访问MySQL
 > 参考[mysql.con](conf/servers/mysql.conf)
 
-- **访问有授权验证的Redis**
+### 访问Redis
 > 参考[redis.conf](conf/servers/redis.conf)，[redis auth_connect](https://moonbingbing.gitbooks.io/openresty-best-practices/content/redis/auth_connect.html)
 
+### 动态方法，惰性生成
+
+以 [lua-resty-redis](https://github.com/openresty/lua-resty-redis/blob/master/lib/resty/redis.lua#L682) 为优秀代表。
+
+## Lua-Nginx-Module
+
+### 执行阶段
+<img src="./static/imgs/openresty_phases.png" />
+
+>- `set_by_lua*`: 流程分支处理判断变量初始化
+>- `rewrite_by_lua*`: 转发、重定向、缓存等功能(例如特定请求代理到外网)
+>- `access_by_lua*`: IP 准入、接口权限等情况集中处理(例如配合 iptable 完成简单防火墙)
+>- `content_by_lua*`: 内容生成
+>- `header_filter_by_lua*`: 响应头部过滤处理(例如添加头部信息)
+>- `body_filter_by_lua*`: 响应体过滤处理(例如完成应答内容统一成大写)
+>- `log_by_lua*:` 会话完成后本地异步完成日志记录(日志可以记录在本地，还可以同步到其他机器)
+
+**注意问题：**
+
+1. 日志推送到远程机器推荐使用 [`lua-resty-logger-socket`](https://github.com/cloudflare/lua-resty-logger-socket) 模块；
+2. 打印日志一定要放在该阶段，不然可能会出现日志量小于 `flush_limit` 的情况下，不会触发 `_flush_buffer` 函数，而丢失日志的问题。
+3. 如果需要在多个phases阶段传递变量，可以使用 [`ngx.ctx`](https://github.com/openresty/lua-nginx-module#ngxctx) 进行传递。
+
+### Lua代码热加载
+
+- 代码有变动时，自动加载最新 Lua 代码，但是 Nginx 本身，不做任何 reload。
+- 自动加载后的代码，享用 `lua_code_cache on` 带来的高效特性。
+
+### OpenResty的缓存
+
+有两种方式，使用 [`Lua shared dict`](https://github.com/openresty/lua-nginx-module#ngxshareddict) 或者 [`Lua lrucache`](https://github.com/openresty/lua-resty-lrucache)。二者的区别是：
+
+- `Lua shared dict`需要先开启配置：`lua_shared_dict my_cache 128m`，这个cache是 Nginx `所有worker之间共享的`，内部使用的也是LRU算法；
+- `Lua lrucache` 是worker级别的，不会在 Nginx workers直接共享。 并且，它是预先分配好 key 的数量，而 shared dict 需要自己用 key 和 value 的大小和数量，来估算需要把内存设置为多少。
+
+示例代码 [my_cache.conf](conf/servers/my_cache.conf)
+
+### 封禁某些终端访问
+
+推荐第三方库 [lua-resty-iputils](https://github.com/hamishforbes/lua-resty-iputils/)
+只有ip白名单的请求才合法，示例参考 [whitelist_ips.conf](conf/servers/whitelist_ips.conf)
+
+### 动态限速
+
+最佳实践参考 [`lua-limit`](https://github.com/beyondyyh/openresty-best-practices/blob/master/ngx_lua/lua-limit.md)
+
+### OpenResty典型使用场景
+
+其实官网 wiki 已经列了出来：
+* 在 Lua 中混合处理不同 Nginx 模块输出（proxy, drizzle, postgres, Redis, memcached 等）。
+* 在请求真正到达上游服务之前，Lua 中处理复杂的准入控制和安全检查。
+* 比较随意的控制应答头（通过 Lua）。
+* 从外部存储中获取后端信息，并用这些信息来实时选择哪一个后端来完成业务访问。
+* 在内容 handler 中随意编写复杂的 web 应用，同步编写异步访问后端数据库和其他存储。
+* 在 rewrite 阶段，通过 Lua 完成非常复杂的处理。
+* 在 Nginx 子查询、location 调用中，通过 Lua 实现高级缓存机制。
+* 对外暴露强劲的 Lua 语言，允许使用各种 Nginx 模块，自由拼合没有任何限制。该模块的脚本有充分的灵活性，同时提供的性能水平与本地 C 语言程序无论是在 CPU 时间方面以及内存占用差距非常小。所有这些都要求 LuaJIT 2.x 是启用的。其他脚本语言实现通常很难满足这一性能水平。
+
+## Lua-resty-dns Library，实现DNS解析
+
+[`lua-resty-dns`](https://github.com/openresty/lua-resty-dns) 库提供了 ngx_lua 模块的 DNS 解析器
+示例代码 [my_dns.conf](conf/servers/my_dns.conf)
+
+## 缓存失效风暴
+> 春哥在 [`lua-resty-lock`](https://github.com/openresty/lua-resty-lock#for-cache-locks) 的文档里面做了详细的说明，lua-resty-lock 库本身已经替你完成了 wait for lock 的过程。
+
+## OpenResty支持HTTPS TLS证书
+> 参考春哥的最佳实践 [SSL](https://github.com/beyondyyh/openresty-best-practices/blob/master/ssl/introduction.md)
+
+## 测试

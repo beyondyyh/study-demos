@@ -1,4 +1,4 @@
-local _M = { VERSION = "1.0.0" }
+-- local _M = { VERSION = "1.0.0" }
 
 --========== {$prefix}/lua/comm/param.lua
 local param = require("comm.param")
