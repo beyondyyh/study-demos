@@ -179,3 +179,48 @@ $ ps -ef|grep openresty
 > 参考春哥的最佳实践 [SSL](https://github.com/beyondyyh/openresty-best-practices/blob/master/ssl/introduction.md)
 
 ## 测试
+
+### 静态文件测试
+
+主要执行语法检测和编码风格检测
+>* 安装luacheck工具 `luarocks install luacheck --local`
+>* 使用也很方便 `luacheck filename or directory` 即可
+
+可以使用git-hook功能，在pre-commit阶段执行检测脚本，示例 [`pre-commit.hooks.sh`](pre-commit.hooks.sh)
+
+### 单元测试
+> 首先需要按照 `Test::Nginx` 库，[教程](https://metacpan.org/pod/Test::Nginx::Socket)
+> ```sh
+> perl -MCPAN -e shell
+> install Test::Nginx
+> install Test::Nginx:Socket
+> ```
+
+**执行测试：** `prove t/xxx.t`
+
+推荐 [lua-resty-test](https://github.com/iresty/lua-resty-test/) 测试库
+
+### 代码覆盖率
+参考 [coverage](https://github.com/beyondyyh/openresty-best-practices/blob/master/test/coverage.md)
+
+### API测试
+参考 [api test](https://github.com/beyondyyh/openresty-best-practices/blob/master/test/apitest.md)
+
+### 性能测试
+参考 [preformance test](https://github.com/beyondyyh/openresty-best-practices/blob/master/test/performance_test.md)
+
+### 灰度发布
+灰度发布流程：
+
+<img src="./static/imgs/deploy_gray.png" />
+
+## Web服务
+
+- **TIME_WAIT问题**
+
+<img src="./static/imgs/tcp_time_wait.png" />
+
+本文内容参考了 [火丁笔记](https://blog.huoding.com/2013/12/31/316) 和 [Nginx 开发从入门到精通](http://tengine.taobao.org/book/chapter_02.html)
+
+- **与Docker使用的网络瓶颈问题**
+> 参考 [最佳实践](https://github.com/beyondyyh/openresty-best-practices/blob/master/web/docker.md)

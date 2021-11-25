@@ -1,0 +1,8 @@
+return {
+    tick = true,        -- Enable saving coverage data after every savestepsize lines?
+    savestepsize = 1,   -- 提高写入频率，默认是按照100条一批写入的
+    modules = {
+        ["lua/*"] = "lua",
+        ["lua/t/unit/*"] = "unit_test", -- 单元测试
+    },
+}
