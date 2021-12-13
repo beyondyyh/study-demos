@@ -1,4 +1,4 @@
-local _M = { VERSION = "1.0.0" }
+local _M = { _VERSION = "0.0.1" }
 
 -- 对输入参数进行校验，只要不为数字则返回false
 function _M.is_number(...)

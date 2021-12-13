@@ -1,6 +1,6 @@
 -- file use_lrucache.lua: example "use_lrucache" module
 
-local _M = {}
+local _M = { _VERSION = '0.01' }
 
 -- alternatively: local lrucache = require "resty.lrucache.pureffi"
 local lrucache = require "resty.lrucache"

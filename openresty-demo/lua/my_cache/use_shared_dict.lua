@@ -1,7 +1,7 @@
 -- file use_shared_dict.lua: example "use_shared_dict" module
 -- require "resty.core"
 
-local _M = {}
+local _M = { _VERSION = '0.01' }
 
 local ngx_cache = ngx.shared.my_cache
 

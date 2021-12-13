@@ -137,6 +137,18 @@ $ ps -ef|grep openresty
 - 代码有变动时，自动加载最新 Lua 代码，但是 Nginx 本身，不做任何 reload。
 - 自动加载后的代码，享用 `lua_code_cache on` 带来的高效特性。
 
+**流程：**
+
+<img src="./static/imgs/lua_reload.png" />
+
+**示例：**
+1. 开启`lua_code_cache on`，并做一些初始化工作
+```sh
+lua_code_cache on;
+# http/https协议初始化，主要做一些插件的初始化工作，如启动后台线程定时轮询lua代码是否更新等操作
+init_worker_by_lua_file lua/my_reload/http_worker_init.lua;
+```
+
 ### OpenResty的缓存
 
 有两种方式，使用 [`Lua shared dict`](https://github.com/openresty/lua-nginx-module#ngxshareddict) 或者 [`Lua lrucache`](https://github.com/openresty/lua-resty-lrucache)。二者的区别是：
@@ -173,7 +185,7 @@ $ ps -ef|grep openresty
 示例代码 [my_dns.conf](conf/servers/my_dns.conf)
 
 ## 缓存失效风暴
-> 春哥在 [`lua-resty-lock`](https://github.com/openresty/lua-resty-lock#for-cache-locks) 的文档里面做了详细的说明，lua-resty-lock 库本身已经替你完成了 wait for lock 的过程。
+> 春哥在 [`lua-resty-lock`](https://github.com/openresty/lua-resty-lock#for-cache-locks) 的文档里面做了详细的说明，lua-resty-lock 库本身已经替你完成了 `wait for lock` 的过程。
 
 ## OpenResty支持HTTPS TLS证书
 > 参考春哥的最佳实践 [SSL](https://github.com/beyondyyh/openresty-best-practices/blob/master/ssl/introduction.md)
@@ -189,14 +201,14 @@ $ ps -ef|grep openresty
 可以使用git-hook功能，在pre-commit阶段执行检测脚本，示例 [`pre-commit.hooks.sh`](pre-commit.hooks.sh)
 
 ### 单元测试
-> 首先需要按照 `Test::Nginx` 库，[教程](https://metacpan.org/pod/Test::Nginx::Socket)
-> ```sh
-> perl -MCPAN -e shell
-> install Test::Nginx
-> install Test::Nginx:Socket
-> ```
 
-**执行测试：** `prove t/xxx.t`
+- 先安装 perl 的包管理器 `cpanminus`
+- 然后通过 cpanm 来安装 `test-gninx：sudo cpanm --notest Test::Nginx IPC::Run > build.log 2>&1 || (cat build.log && exit 1)`
+- 然后 clone 最新的源码：`git clone https://github.com/openresty/test-nginx.git`
+- 通过 perl 的 prove 命令来加载 test-nginx 的库，并运行 /t 目录下的测试案例集：
+- 追加当前目录到perl模块目录： `export PERL5LIB=.:$PERL5LIB`
+- 直接运行：make test
+- 指定 nginx 二进制路径：`TEST_NGINX_BINARY=/usr/local/bin/openresty prove -Itest-nginx/lib -r t`
 
 推荐 [lua-resty-test](https://github.com/iresty/lua-resty-test/) 测试库
 
