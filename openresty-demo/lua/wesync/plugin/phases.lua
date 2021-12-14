@@ -1,10 +1,8 @@
--- require "pb"
--- local wesync = require "my_reload.kylin"
 local ngx_log = ngx.log
 local INFO = ngx.INFO
 local CRIT = ngx.CRIT
 
-local delay_send = require "my_reload.plugin.common".delay_send
+local delay_send = require "wesync.plugin.common".delay_send
 
 local _M = {}
 
@@ -12,33 +10,28 @@ local inited = false
 
 -- 默认需要加载插件列表，若 consul中被设置，对应键值对内容会被覆盖
 local default_plugins = {
-    -- ["wesync.plugin.limit_req"] = true,
-    -- ["wesync.plugin.check_uid"] = true,
-    -- ["wesync.push.pubsub"] = true,
-    -- ["wesync.plugin.check_config"] = true,
-    -- ["wesync.plugin.black_list"] = true,
-    -- ["wesync.plugin.init_act"] = true,
-    -- ["wesync.plugin.proxy.filter_proxy"] = true,
+    ["wesync.plugin.check_config"] = true,
 }
 
 local function sortf(a, b)
     return a.priority < b.priority
 end
 
--- local function get_err_resp(code, header)
---     local h = wesync.header()
---     h.proto = 63
+local function get_err_resp(code, header)
+    -- local h = wesync.header()
+    -- h.proto = 63
 
---     if header then
---         h.request_tid = header.tid
---         h.request_id = header.request_id
---     end
+    -- if header then
+    --     h.request_tid = header.tid
+    --     h.request_id = header.request_id
+    -- end
 
---     local body = wesync.gen_resp()
---     body.code = code
+    -- local body = wesync.gen_resp()
+    -- body.code = code
 
---     return h, body
--- end
+    -- return h, body
+    return header, {code = code, error_msg = "something wrong!"}
+end
 
 local function get_mn(mn)
     if string.find(mn, "wesync.") then
@@ -203,7 +196,7 @@ end
 
 -- 通过读取配置文件，加载、或删除插件
 local function init_plugins()
-    local config = require "my_reload.config"
+    local config = require "wesync.config"
     local __plugins = config.plugins
     local _plugins
     if not __plugins then
