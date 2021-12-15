@@ -1,6 +1,7 @@
 local ngx_log = ngx.log
 local INFO = ngx.INFO
 local CRIT = ngx.CRIT
+local ALERT = ngx.ALERT
 
 local delay_send = require "wesync.plugin.common".delay_send
 
@@ -93,7 +94,7 @@ function _M:add_plugin(mn)
         end
     end
 
-    ngx_log(ngx.ALERT, 'add plugin: ' .. lmodule)
+    ngx_log(ALERT, 'add plugin: ' .. lmodule)
     table.insert(plugins, lobj)
 
     if inited then
@@ -118,7 +119,7 @@ function _M:del_plugin(mn)
         if lmod.name == v.name then
             table.remove(plugins, i)
             v:uninstall()
-            ngx_log(ngx.ALERT, 'del plugin: ' .. lmodule)
+            ngx_log(ALERT, 'del plugin: ' .. lmodule)
             success = true
             break
         end
@@ -138,7 +139,7 @@ function _M:reload_plugin(mn)
     local lm = get_mn(mn)
     package.loaded[lm] = nil
     local succ2, err2 = _M:add_plugin(mn)
-    ngx.log(ngx.ALERT, 'reload plugin: ' .. mn .. ', result: ' .. tostring(succ2))
+    ngx.log(ALERT, 'reload plugin: ' .. mn .. ', result: ' .. tostring(succ2))
 
     return succ2, err2
 end

@@ -3,6 +3,16 @@
 ## 安装、服务启停
 > 做 OpenResty 开发，[`lua-nginx-module官方文档`](https://github.com/openresty/lua-nginx-module) 是你的首选，Lua 语言的库都是同步阻塞的，用的时候要三思
 
+**Homebrew安装：**
+```sh
+brew install openresty/brew/openresty
+```
+
+> **安装过程中可能会出现以下错误：**
+>
+> curl: (7) Failed to connect to raw.githubusercontent.com port 443: Connection refused Error: openresty: Failed to download resource "openresty-openssl111--patch"
+> Download failed: https://raw.githubusercontent.com/openresty/openresty/master/patches/openssl-1.1.1f-sess_set_get_cb_yield.patch
+
 **源码安装：**
 ```sh
 # 下载源码
@@ -11,12 +21,24 @@ wget -O ngx_openresty-1.9.7.1.tar.gz https://openresty.org/download/ngx_openrest
 # 解压后编译
 cd ~/Workspace/study/openresty/ngx_openresty-1.9.7.1/
 # 安装路径：/usr/local/openresty/
-./configure --prefix=/usr/local/openresty/\
-            --with-cc-opt="-I/usr/local/include"\
+./configure --prefix=/usr/local/openresty\
             --with-luajit\
-            --without-http_redis2_module \
-            --with-ld-opt="-L/usr/local/lib"
+            --with-cc-opt="-I/usr/local/opt/openssl@3/include/ -I/usr/local/opt/pcre/include/" \
+            --with-ld-opt="-L/usr/local/opt/openssl@3/lib/ -L/usr/local/opt/pcre/lib/" \
+            -j8
 ```
+
+> **安装过程中可能会出现以下错误：**
+>
+> ./configure: error: SSL modules require the OpenSSL library.
+> You can either do not enable the modules, or install the OpenSSL library
+> into the system, or build the OpenSSL library statically from the source
+> with nginx by using --with-openssl=<path> option.
+>
+> **解决方案：**
+> --with-cc-opt="-I/usr/local/opt/openssl/include/ -I/usr/local/opt/pcre/include/" \
+> --with-ld-opt="-L/usr/local/opt/openssl/lib/ -L/usr/local/opt/pcre/lib/" \
+> -j8
 
 **start：**
 ```sh
