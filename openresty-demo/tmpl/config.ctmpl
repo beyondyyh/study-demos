@@ -1,0 +1,14 @@
+local _M = {_VERSION = '{{ timestamp "unix" }}'}
+
+{{ range ls "openresty_ngw/dync/config@dc1" }}
+_M.{{ .Key }} = {{ .Value }}
+{{ end }}
+
+{{ range $key, $pairs := tree "openresty_ngw/dync/config@dc1" | byKey }}
+_M.{{ $key }} = {
+{{ range $pair := $pairs }}  ["{{ .Key }}"] = {{ .Value }},
+{{ end }}
+}
+{{ end }}
+
+return _M

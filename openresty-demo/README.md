@@ -137,12 +137,28 @@ $ ps -ef|grep openresty
 - 代码有变动时，自动加载最新 Lua 代码，但是 Nginx 本身，不做任何 reload。
 - 自动加载后的代码，享用 `lua_code_cache on` 带来的高效特性。
 
-**流程：**
+#### 具体流程
+
+**1. 动态配置**
+
+<img src="./static/imgs/dync_config.png" />
+
+>- 借助 `Consul Key&Value` 存储，`consul-watch` 监听 和 `consul-template` 根据模板自动生成文件的机制，生成 dync/config.lua配置文件；
+>- `consul-template` 生成文件之后，执行回调脚本，通知 `Lua reload`
+
+**示例：**
+
+> [running_tmpl_online.sh](tmpl/running_tmpl_online.sh)
+
+**2. Lua Reload**
 
 <img src="./static/imgs/lua_reload.png" />
 
 **示例：**
-1. 开启`lua_code_cache on`，并做一些初始化工作
+
+> [wesync.conf](conf/servers/wesync.conf)
+
+开启`lua_code_cache on`，并做一些初始化工作
 ```sh
 lua_code_cache on;
 # http/https协议初始化，主要做一些插件的初始化工作，如启动后台线程定时轮询lua代码是否更新等操作
