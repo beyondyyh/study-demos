@@ -113,9 +113,11 @@ function _M:check_conf(premature)
     end
 
     handle_dync_config()
+    -- delay 5秒后，循环调用check_conf
     timer_at(delay, _M.check_conf)
 end
 
+-- 插件初始化，10s后开始执行check_conf
 function _M:init_worker()
     ngx_log(ngx.INFO, "starting check lua module timer ...")
     timer_at(10, _M.check_conf)

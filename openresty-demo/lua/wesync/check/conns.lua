@@ -15,7 +15,7 @@ local function split(str, delimiter)
 end
 
 -- 加载自动生成的当前系统打包版本
-local _, version = pcall(require, "kversion")
+local _, version = pcall(require, "version")
 
 -- 输出当前业务版本
 local vers
@@ -27,10 +27,8 @@ end
 
 local c = {}
 c.current = tonumber(ngx.var.connections_active) --包括读、写和空闲连接数
-
-c.active = ngx.var.connections_reading + ngx.var.connections_writing
-
-c.idle = tonumber(ngx.var.connections_waiting)
+c.active  = ngx.var.connections_reading + ngx.var.connections_writing
+c.idle    = tonumber(ngx.var.connections_waiting)
 c.writing = tonumber(ngx.var.connections_writing)
 c.reading = tonumber(ngx.var.connections_reading)
 
@@ -41,6 +39,7 @@ local t = {
     time = ngx.time()
 }
 
+-- 命令只能在linux系统下使用
 local tmp = io.popen('/usr/sbin/ss -tan | /usr/bin/awk \'NR>1{++S[$1]}END{for (a in S) print a,S[a]}\'')
 local data = split(tmp:read("*all"), '\n')
 local data_table = {}

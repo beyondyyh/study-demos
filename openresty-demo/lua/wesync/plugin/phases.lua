@@ -33,6 +33,7 @@ local function get_err_resp(code, header)
     return header, {code = code, error_msg = "something wrong!"}
 end
 
+-- 获取插件module name
 local function get_mn(mn)
     if string.find(mn, "wesync.") then
         return mn
@@ -103,6 +104,7 @@ function _M:add_plugin(mn)
     return true
 end
 
+-- 卸载插件
 function _M:del_plugin(mn)
     local lmodule = get_mn(mn)
     local succ, lmod = pcall(require, lmodule)
@@ -141,6 +143,7 @@ function _M:reload_plugin(mn)
     return succ2, err2
 end
 
+-- 获取插件
 function _M:get_plugins()
     return plugins
 end
