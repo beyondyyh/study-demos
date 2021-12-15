@@ -1,5 +1,6 @@
 # Binaries for programs and plugins
 *.sw*
+.DS_Store
 
 # Test binary, build with `go test -c`
 coverage.txt
