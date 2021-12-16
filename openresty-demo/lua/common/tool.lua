@@ -1,7 +1,7 @@
 local ngx_re_gmatch = ngx.re.gmatch
 local table_insert = table.insert
 
-local _M = {_VERSION = '0.01' }
+local _M = { _VERSION = '0.01' }
 
 _M.split = function (szFullString, szSeparator)
     local nFindStartIndex = 1
@@ -49,7 +49,7 @@ local function format_table(t, tabcount)
     local str = ""
     if type(t) == "table" then
         for k, v in pairs(t) do
-            local tab = string.rep("\t", tabcount)
+            local tab = string.rep("  ", tabcount) -- 2个空格代替tab
             if type(v) == "table" then
                 str = str .. tab .. string.format("[%s] = {", format_value(k)) .. '\n'
                 str = str .. format_table(v, tabcount + 1) .. tab .. '}\n'

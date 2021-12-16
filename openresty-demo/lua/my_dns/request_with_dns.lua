@@ -1,6 +1,6 @@
 local resolver = require "resty.dns.resolver"
 local http     = require "resty.http"
-local util     = require "comm.util"
+local tool     = require "common.tool"
 
 -- deps：luarocks-5.3 install lua-resty-dns --local
 -- deps：luarocks-5.3 install lua-resty-http --local
@@ -87,7 +87,7 @@ function _M.go()
         ie = "UTF-8",
     }
     local res = http_request_with_dns(url, param)
-    ngx.say(util.format(res))
+    ngx.say(tool.format(res))
 end
 
 return _M

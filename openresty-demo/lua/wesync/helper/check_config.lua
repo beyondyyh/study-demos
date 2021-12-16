@@ -9,7 +9,7 @@ local INFO = ngx.INFO
 local ERR = ngx.ERR
 local CRIT = ngx.CRIT
 
-local tool = require "wesync.tool"
+local tool = require "common.tool"
 local ngw_log = require "wesync.ngw_log"
 
 local exiting = ngx.worker.exiting

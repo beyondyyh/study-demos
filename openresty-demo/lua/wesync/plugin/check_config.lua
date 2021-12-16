@@ -12,7 +12,7 @@ local CRIT = ngx.CRIT
 local subsys = ngx.config.subsystem
 
 local bo = require "wesync.plugin.base_plugin"
-local tool = require "wesync.tool"
+local tool = require "common.tool"
 
 local exiting = ngx.worker.exiting
 local exit = ngx.exit
