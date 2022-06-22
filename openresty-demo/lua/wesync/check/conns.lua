@@ -2,12 +2,12 @@ local cjson = require "cjson"
 local ngx_say = ngx.say
 
 local function split(str, delimiter)
-    if str==nil or str=='' or delimiter==nil then
+    if str == nil or str == '' or delimiter == nil then
         return nil
     end
 
     local result = {}
-    for match in (str..delimiter):gmatch("(.-)"..delimiter) do
+    for match in (str .. delimiter):gmatch("(.-)" .. delimiter) do
         table.insert(result, match)
     end
 
@@ -25,9 +25,9 @@ else
     vers = "0.0.0"
 end
 
-local c = {}
+local c   = {}
 c.current = tonumber(ngx.var.connections_active) --包括读、写和空闲连接数
-c.active  = ngx.var.connections_reading + ngx.var.connections_writing
+c.active  = (tonumber(ngx.var.connections_reading) or 0) + (tonumber(ngx.var.connections_writing) or 0)
 c.idle    = tonumber(ngx.var.connections_waiting)
 c.writing = tonumber(ngx.var.connections_writing)
 c.reading = tonumber(ngx.var.connections_reading)
@@ -47,8 +47,8 @@ if data then
     for _, stat in ipairs(data) do
         local idx, _ = string.find(stat, ' ')
         if idx and idx > 0 then
-            local key = string.sub(stat, 1, idx-1)
-            local val = tonumber(string.sub(stat, idx+1))
+            local key = string.sub(stat, 1, idx - 1)
+            local val = tonumber(string.sub(stat, idx + 1))
             if key and val then
                 data_table[key] = val
             end

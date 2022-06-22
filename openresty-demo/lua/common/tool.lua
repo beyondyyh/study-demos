@@ -3,7 +3,7 @@ local table_insert = table.insert
 
 local _M = { _VERSION = '0.01' }
 
-_M.split = function (szFullString, szSeparator)
+_M.split = function(szFullString, szSeparator)
     local nFindStartIndex = 1
     local nSplitIndex = 1
     local nSplitArray = {}

@@ -1,9 +1,11 @@
 # openresty-demo
 
 ## 安装、服务启停
+
 > 做 OpenResty 开发，[`lua-nginx-module官方文档`](https://github.com/openresty/lua-nginx-module) 是你的首选，Lua 语言的库都是同步阻塞的，用的时候要三思
 
 **Homebrew安装：**
+
 ```sh
 brew install openresty/brew/openresty
 ```
@@ -11,9 +13,10 @@ brew install openresty/brew/openresty
 > **安装过程中可能会出现以下错误：**
 >
 > curl: (7) Failed to connect to raw.githubusercontent.com port 443: Connection refused Error: openresty: Failed to download resource "openresty-openssl111--patch"
-> Download failed: https://raw.githubusercontent.com/openresty/openresty/master/patches/openssl-1.1.1f-sess_set_get_cb_yield.patch
+> Download failed: <https://raw.githubusercontent.com/openresty/openresty/master/patches/openssl-1.1.1f-sess_set_get_cb_yield.patch>
 
 **源码安装：**
+
 ```sh
 # 下载源码
 wget -O ngx_openresty-1.9.7.1.tar.gz https://openresty.org/download/ngx_openresty-1.9.7.1.tar.gz
@@ -41,16 +44,19 @@ cd ~/Workspace/study/openresty/ngx_openresty-1.9.7.1/
 > -j8
 
 **start：**
+
 ```sh
 openresty -p `pwd`/../openresty-demo
 ```
 
 **stop：**
+
 ```sh
 openresty -p `pwd`/../openresty-demo -s stop
 ```
 
 **查看进程：**
+
 ```sh
 $ ps -ef|grep openresty
   501 89936     1   0  3:01PM ??         0:00.00 nginx: master process openresty -p /Users/yehong/Workspace/study/go/src/beyondyyh/study-demos/openresty-demo/../openresty-demo
@@ -71,6 +77,7 @@ $ ps -ef|grep openresty
 | location / | 通用匹配，任何未匹配到其它location的请求都会匹配到，相当于switch中的default |
 
 > **多个 location 配置的情况下匹配顺序为：**
+>
 >- 首先精确匹配 `=`
 >- 其次前缀匹配 `^~`
 >- 其次是按文件中顺序的`正则匹配`
@@ -86,6 +93,7 @@ $ ps -ef|grep openresty
 - nginx.say会对响应体多输出一个`\n`，如果是浏览器输出而且没有区别，但是终端调试工具下使用ngx.say会比较方便。
 
 ### 日志标准输出
+
 > 自定义日志格式，参考nginx的 [`log_format`](http://nginx.org/en/docs/http/ngx_http_log_module.html#log_format) 环节
 
 如果你的日志需要归集，并且对时效性要求比较高推荐使用 [lua-resty-logger-socket](https://github.com/cloudflare/lua-resty-logger-socket)，
@@ -94,6 +102,7 @@ $ ps -ef|grep openresty
 ### 简单API Server框架
 
 整体目录结构：
+
 ```txt
 .
 ├── README.md
@@ -123,12 +132,15 @@ $ ps -ef|grep openresty
 ```
 
 ### Nginx内置绑定变量
+
 > 在OpenResty中如何引用这些变量呢？参考 [ngx.var.VARIAB](https://github.com/openresty/lua-nginx-module#ngxvarvariable) 小节。
 
 ### 访问MySQL
+
 > 参考[mysql.con](conf/servers/mysql.conf)
 
 ### 访问Redis
+
 > 参考[redis.conf](conf/servers/redis.conf)，[redis auth_connect](https://moonbingbing.gitbooks.io/openresty-best-practices/content/redis/auth_connect.html)
 
 ### 动态方法，惰性生成
@@ -138,6 +150,7 @@ $ ps -ef|grep openresty
 ## Lua-Nginx-Module
 
 ### 执行阶段
+
 <img src="./static/imgs/openresty_phases.png" />
 
 >- `set_by_lua*`: 流程分支处理判断变量初始化
@@ -161,7 +174,7 @@ $ ps -ef|grep openresty
 
 #### 具体流程
 
-**1. 动态配置**
+**1. 动态配置：**
 
 <img src="./static/imgs/dync_config.png" />
 
@@ -172,7 +185,7 @@ $ ps -ef|grep openresty
 
 > [running_tmpl_online.sh](tmpl/running_tmpl_online.sh)
 
-**2. Lua Reload**
+**2. Lua Reload：**
 
 <img src="./static/imgs/lua_reload.png" />
 
@@ -181,6 +194,7 @@ $ ps -ef|grep openresty
 > [wesync.conf](conf/servers/wesync.conf)
 
 开启`lua_code_cache on`，并做一些初始化工作
+
 ```sh
 lua_code_cache on;
 # http/https协议初始化，主要做一些插件的初始化工作，如启动后台线程定时轮询lua代码是否更新等操作
@@ -208,14 +222,15 @@ init_worker_by_lua_file lua/my_reload/http_worker_init.lua;
 ### OpenResty典型使用场景
 
 其实官网 wiki 已经列了出来：
-* 在 Lua 中混合处理不同 Nginx 模块输出（proxy, drizzle, postgres, Redis, memcached 等）。
-* 在请求真正到达上游服务之前，Lua 中处理复杂的准入控制和安全检查。
-* 比较随意的控制应答头（通过 Lua）。
-* 从外部存储中获取后端信息，并用这些信息来实时选择哪一个后端来完成业务访问。
-* 在内容 handler 中随意编写复杂的 web 应用，同步编写异步访问后端数据库和其他存储。
-* 在 rewrite 阶段，通过 Lua 完成非常复杂的处理。
-* 在 Nginx 子查询、location 调用中，通过 Lua 实现高级缓存机制。
-* 对外暴露强劲的 Lua 语言，允许使用各种 Nginx 模块，自由拼合没有任何限制。该模块的脚本有充分的灵活性，同时提供的性能水平与本地 C 语言程序无论是在 CPU 时间方面以及内存占用差距非常小。所有这些都要求 LuaJIT 2.x 是启用的。其他脚本语言实现通常很难满足这一性能水平。
+
+- 在 Lua 中混合处理不同 Nginx 模块输出（proxy, drizzle, postgres, Redis, memcached 等）。
+- 在请求真正到达上游服务之前，Lua 中处理复杂的准入控制和安全检查。
+- 比较随意的控制应答头（通过 Lua）。
+- 从外部存储中获取后端信息，并用这些信息来实时选择哪一个后端来完成业务访问。
+- 在内容 handler 中随意编写复杂的 web 应用，同步编写异步访问后端数据库和其他存储。
+- 在 rewrite 阶段，通过 Lua 完成非常复杂的处理。
+- 在 Nginx 子查询、location 调用中，通过 Lua 实现高级缓存机制。
+- 对外暴露强劲的 Lua 语言，允许使用各种 Nginx 模块，自由拼合没有任何限制。该模块的脚本有充分的灵活性，同时提供的性能水平与本地 C 语言程序无论是在 CPU 时间方面以及内存占用差距非常小。所有这些都要求 LuaJIT 2.x 是启用的。其他脚本语言实现通常很难满足这一性能水平。
 
 ## Lua-resty-dns Library，实现DNS解析
 
@@ -223,9 +238,11 @@ init_worker_by_lua_file lua/my_reload/http_worker_init.lua;
 示例代码 [my_dns.conf](conf/servers/my_dns.conf)
 
 ## 缓存失效风暴
+
 > 春哥在 [`lua-resty-lock`](https://github.com/openresty/lua-resty-lock#for-cache-locks) 的文档里面做了详细的说明，lua-resty-lock 库本身已经替你完成了 `wait for lock` 的过程。
 
 ## OpenResty支持HTTPS TLS证书
+
 > 参考春哥的最佳实践 [SSL](https://github.com/beyondyyh/openresty-best-practices/blob/master/ssl/introduction.md)
 
 ## 测试
@@ -233,8 +250,9 @@ init_worker_by_lua_file lua/my_reload/http_worker_init.lua;
 ### 静态文件测试
 
 主要执行语法检测和编码风格检测
->* 安装luacheck工具 `luarocks install luacheck --local`
->* 使用也很方便 `luacheck filename or directory` 即可
+>
+>- 安装luacheck工具 `luarocks install luacheck --local`
+>- 使用也很方便 `luacheck filename or directory` 即可
 
 可以使用git-hook功能，在pre-commit阶段执行检测脚本，示例 [`pre-commit.hooks.sh`](pre-commit.hooks.sh)
 
@@ -251,15 +269,19 @@ init_worker_by_lua_file lua/my_reload/http_worker_init.lua;
 推荐 [lua-resty-test](https://github.com/iresty/lua-resty-test/) 测试库
 
 ### 代码覆盖率
+
 参考 [coverage](https://github.com/beyondyyh/openresty-best-practices/blob/master/test/coverage.md)
 
 ### API测试
+
 参考 [api test](https://github.com/beyondyyh/openresty-best-practices/blob/master/test/apitest.md)
 
 ### 性能测试
+
 参考 [preformance test](https://github.com/beyondyyh/openresty-best-practices/blob/master/test/performance_test.md)
 
 ### 灰度发布
+
 灰度发布流程：
 
 <img src="./static/imgs/deploy_gray.png" />
@@ -273,4 +295,5 @@ init_worker_by_lua_file lua/my_reload/http_worker_init.lua;
 本文内容参考了 [火丁笔记](https://blog.huoding.com/2013/12/31/316) 和 [Nginx 开发从入门到精通](http://tengine.taobao.org/book/chapter_02.html)
 
 - **与Docker使用的网络瓶颈问题**
+
 > 参考 [最佳实践](https://github.com/beyondyyh/openresty-best-practices/blob/master/web/docker.md)
