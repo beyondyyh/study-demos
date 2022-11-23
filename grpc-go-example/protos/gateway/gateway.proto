@@ -1,0 +1,29 @@
+// 声明proto的版本 只有 proto3 才支持 gRPC
+syntax = "proto3";
+// 指定当前proto文件属于gateway包
+package gateway;
+// 将编译后文件输出在 github.com/beyondyyh/study-demos/grpc-go-example/protos/gateway 目录
+option go_package = "github.com/beyondyyh/study-demos/grpc-go-example/protos/gateway";
+// 引入注解，支持restful api
+import "google/api/annotations.proto";
+
+// 定义一个 greeting 的服务
+service Greeter {
+    rpc SayHello (HelloRequest) returns (HelloReply) {
+        // 添加google.api.http 注解后 gRPC-Gateway 才能生成对应 http 方法
+        option (google.api.http) = {
+            post: "/v1/greeter/sayhello"
+            body: "*"
+        };
+    }
+}
+
+// 参数定义
+message HelloRequest {
+    string name = 1;
+}
+
+// 响应定义
+message HelloReply {
+    string message = 1;
+}

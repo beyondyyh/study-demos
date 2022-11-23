@@ -1,6 +1,8 @@
 # Binaries for programs and plugins
 *.sw*
 .DS_Store
+/.vscode/
+/tmp/
 
 # Test binary, build with `go test -c`
 coverage.txt

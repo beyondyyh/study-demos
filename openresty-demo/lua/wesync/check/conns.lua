@@ -27,7 +27,7 @@ end
 
 local c   = {}
 c.current = tonumber(ngx.var.connections_active) --包括读、写和空闲连接数
-c.active  = (tonumber(ngx.var.connections_reading) or 0) + (tonumber(ngx.var.connections_writing) or 0)
+c.active  = (ngx.var.connections_reading or 0) + (ngx.var.connections_writing or 0)
 c.idle    = tonumber(ngx.var.connections_waiting)
 c.writing = tonumber(ngx.var.connections_writing)
 c.reading = tonumber(ngx.var.connections_reading)

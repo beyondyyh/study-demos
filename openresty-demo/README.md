@@ -161,6 +161,22 @@ $ ps -ef|grep openresty
 >- `body_filter_by_lua*`: 响应体过滤处理(例如完成应答内容统一成大写)
 >- `log_by_lua*:` 会话完成后本地异步完成日志记录(日志可以记录在本地，还可以同步到其他机器)
 
+举一个例子，如果在最开始的开发中，请求体和响应体都是通过 HTTP 明文传输，后面需要使用 aes 加密，利用不同的执行阶段，我们可以非常简单的实现：
+
+```txt
+# 明文协议版本
+location /mixed {
+    content_by_lua_file ...;       # 请求处理
+}
+
+# 加密协议版本
+location /mixed {
+    access_by_lua_file ...;        # 请求加密解码
+    content_by_lua_file ...;       # 请求处理，不需要关心通信协议
+    body_filter_by_lua_file ...;    # 应答加密编码
+}
+```
+
 **注意问题：**
 
 1. 日志推送到远程机器推荐使用 [`lua-resty-logger-socket`](https://github.com/cloudflare/lua-resty-logger-socket) 模块；
@@ -198,7 +214,7 @@ $ ps -ef|grep openresty
 ```sh
 lua_code_cache on;
 # http/https协议初始化，主要做一些插件的初始化工作，如启动后台线程定时轮询lua代码是否更新等操作
-init_worker_by_lua_file lua/my_reload/http_worker_init.lua;
+init_worker_by_lua_file lua/wesync/http_worker_init.lua;
 ```
 
 ### OpenResty的缓存
